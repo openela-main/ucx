@@ -16,8 +16,8 @@
 %bcond_with    vfs
 
 Name: ucx
-Version: 1.14.1
-Release: 1%{?dist}.1
+Version: 1.15.0
+Release: 2%{?dist}
 Summary: UCX is a communication library implementing high-performance messaging
 
 License: BSD
@@ -232,6 +232,7 @@ for large messages.
 %if %{with rdmacm}
 %package rdmacm
 Requires: %{name}-ib%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{version}-%{release}
 Summary: UCX RDMA connection manager support
 
 %description rdmacm
@@ -308,6 +309,14 @@ library internals, protocol objects, transports status, and more.
 %endif
 
 %changelog
+* Thu Nov 09 2023 Kamal Heib <kheib@redhat.com> - 1.15.0-2
+- Fix requirement error
+- Resolves: RHEL-932
+
+* Tue Nov 07 2023 Kamal Heib <kheib@redhat.com> - 1.15.0-1
+- Update to upstream release 1.15.0
+- Resolves: RHEL-932
+
 * Wed Jun 07 2023 Kamal Heib <kheib@redhat.com> - 1.14.1-1.1
 - Fix rpmdeps issue.
 - Resolves: rhbz#2170072
