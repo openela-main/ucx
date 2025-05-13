@@ -11,13 +11,14 @@
 %bcond_with    vfs
 
 Name: ucx
-Version: 1.15.0
+Version: 1.17.0
 Release: 2%{?dist}
 Summary: UCX is a communication library implementing high-performance messaging
 
 License: BSD
 URL: http://www.openucx.org
 Source: https://github.com/openucx/%{name}/releases/download/v%{version}/ucx-%{version}.tar.gz
+Patch0: UCS-TIME-Fix-undeclared-INFINITY-error-in-ucs_time_u.patch
 
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 Prefix: %{_prefix}
@@ -84,6 +85,8 @@ Provides header files and examples for developing with UCX.
 %prep
 %setup -q
 
+%patch -P0 -p1
+
 %build
 %define _with_arg()   %{expand:%%{?with_%{1}:--with-%{2}}%%{!?with_%{1}:--without-%{2}}}
 %define _enable_arg() %{expand:%%{?with_%{1}:--enable-%{2}}%%{!?with_%{1}:--disable-%{2}}}
@@ -118,6 +121,7 @@ rm -f %{buildroot}%{_libdir}/ucx/lib*.a
 %{_libdir}/lib*.so.*
 %{_bindir}/ucx_info
 %{_bindir}/ucx_perftest
+%{_bindir}/ucx_perftest_daemon
 %{_bindir}/ucx_read_profile
 %{_bindir}/io_demo
 %{_datadir}/ucx
@@ -125,6 +129,7 @@ rm -f %{buildroot}%{_libdir}/ucx/lib*.a
 %doc README AUTHORS NEWS
 %{!?_licensedir:%global license %%doc}
 %license LICENSE
+%{_sysconfdir}/ucx/ucx.conf
 
 %files devel
 %{_includedir}/uc*
@@ -288,6 +293,18 @@ library internals, protocol objects, transports status, and more.
 %endif
 
 %changelog
+* Wed Nov 06 2024 Kamal Heib <kheib@redhat.com> - 1.17.0-2
+- Fix build for ppc64le
+- Resolves: RHEL-52883
+
+* Wed Nov 06 2024 Kamal Heib <kheib@redhat.com> - 1.17.0-1
+- Update to upstream release 1.17.0
+- Resolves: RHEL-52883
+
+* Wed May 01 2024 Kamal Heib <kheib@redhat.com> - 1.16.0-1
+- Update to upstream release 1.16.0
+- Resolves: RHEL-24468, RHEL-31249
+
 * Thu Nov 09 2023 Kamal Heib <kheib@redhat.com> - 1.15.0-2
 - Fix requirement error
 - Resolves: RHEL-888
