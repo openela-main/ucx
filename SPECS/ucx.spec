@@ -9,16 +9,17 @@
 %bcond_with    ugni
 %bcond_with    xpmem
 %bcond_with    vfs
+%bcond_with    mad
+%bcond_without mlx5
 
 Name: ucx
-Version: 1.17.0
-Release: 2%{?dist}
+Version: 1.18.1
+Release: 1%{?dist}
 Summary: UCX is a communication library implementing high-performance messaging
 
 License: BSD
 URL: http://www.openucx.org
 Source: https://github.com/openucx/%{name}/releases/download/v%{version}/ucx-%{version}.tar.gz
-Patch0: UCS-TIME-Fix-undeclared-INFINITY-error-in-ucs_time_u.patch
 
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 Prefix: %{_prefix}
@@ -45,6 +46,9 @@ BuildRequires: gdrcopy
 %if %{with ib}
 BuildRequires: libibverbs-devel
 %endif
+%if %{with mlx5}
+BuildRequires: rdma-core-devel
+%endif
 %if %{with knem}
 BuildRequires: knem
 %endif
@@ -59,6 +63,9 @@ BuildRequires: xpmem-devel
 %endif
 %if %{with vfs}
 BuildRequires: fuse3-devel
+%endif
+%if %{with mad}
+BuildRequires: libibmad-devel libibumad-devel
 %endif
 
 %description
@@ -84,8 +91,7 @@ Provides header files and examples for developing with UCX.
 
 %prep
 %setup -q
-
-%patch -P0 -p1
+autoreconf -fiv
 
 %build
 %define _with_arg()   %{expand:%%{?with_%{1}:--with-%{2}}%%{!?with_%{1}:--without-%{2}}}
@@ -100,12 +106,14 @@ Provides header files and examples for developing with UCX.
            %_with_arg cuda cuda \
            %_with_arg gdrcopy gdrcopy \
            %_with_arg ib verbs \
+           %_with_arg mlx5 mlx5 \
            %_with_arg knem knem \
            %_with_arg rdmacm rdmacm \
            %_with_arg rocm rocm \
            %_with_arg xpmem xpmem \
            %_with_arg vfs fuse3 \
            %_with_arg ugni ugni \
+           %_with_arg mad mad \
            %{?configure_options}
 make %{?_smp_mflags} V=1
 
@@ -135,6 +143,7 @@ rm -f %{buildroot}%{_libdir}/ucx/lib*.a
 %{_includedir}/uc*
 %{_libdir}/lib*.so
 %{_libdir}/pkgconfig/ucx*.pc
+%dir %{_libdir}/cmake/ucx
 %{_libdir}/cmake/ucx/*.cmake
 %{_datadir}/ucx/examples
 
@@ -152,6 +161,7 @@ system calls process_vm_readv/writev() for one-shot memory copy from another
 process.
 
 %files cma
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libuct_cma.so.*
 %endif
 
@@ -166,6 +176,7 @@ to UCX communication routines, and transports taking advantage of GPU-Direct
 technology for direct data transfer between GPU and RDMA devices.
 
 %files cuda
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libucx_perftest_cuda.so.*
 %{_libdir}/ucx/libucm_cuda.so.*
 %{_libdir}/ucx/libuct_cuda.so.*
@@ -181,6 +192,7 @@ Provide GDRCopy support for UCX. GDRCopy is a low-latency GPU memory copy
 library, built on top of the NVIDIA GPUDirect RDMA technology.
 
 %files gdrcopy
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libuct_cuda_gdrcopy.so.*
 %endif
 
@@ -196,6 +208,7 @@ Typically these transports provide RDMA support, which enables a fast and
 hardware-offloaded data transfer.
 
 %files ib
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libuct_ib.so.*
 %endif
 
@@ -210,6 +223,7 @@ kernel module that enables high-performance intra-node MPI communication
 for large messages.
 
 %files knem
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libuct_knem.so.*
 %endif
 
@@ -224,6 +238,7 @@ Provides RDMA connection-manager support to UCX, which enables client/server
 based connection establishment for RDMA-capable transports.
 
 %files rdmacm
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libuct_rdmacm.so.*
 %endif
 
@@ -236,6 +251,7 @@ Summary: UCX ROCm GPU support
 Provides Radeon Open Compute (ROCm) Runtime support for UCX.
 
 %files rocm
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libuct_rocm.so.*
 %{_libdir}/ucx/libucm_rocm.so.*
 
@@ -249,6 +265,7 @@ Provide GDRCopy support for UCX ROCM. GDRCopy is a low-latency GPU memory copy
 library, built on top of the NVIDIA GPUDirect RDMA technology.
 
 %files rocmgdr
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libuct_rocm_gdr.so.*
 %endif
 %endif
@@ -262,6 +279,7 @@ Summary: UCX Gemini/Aries transport support.
 Provides Gemini/Aries transport for UCX.
 
 %files ugni
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libuct_ugni.so.*
 %endif
 
@@ -275,6 +293,7 @@ Provides XPMEM transport for UCX. XPMEM is a Linux kernel module that enables a
 process to map the memory of another process into its virtual address space.
 
 %files xpmem
+%dir %{_libdir}/ucx
 %{_libdir}/ucx/libuct_xpmem.so.*
 %endif
 
@@ -292,7 +311,40 @@ library internals, protocol objects, transports status, and more.
 %{_bindir}/ucx_vfs
 %endif
 
+%if %{with mlx5}
+%package ib-mlx5
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: ucx-ib = %{version}-%{release}
+Summary: UCX IB MLX5 RDMA provider support
+Group: System Environment/Libraries
+
+%description ib-mlx5
+Provides support for DevX, Direct Verbs and DC transports for Infiniband
+devices.
+
+%files ib-mlx5
+%{_libdir}/ucx/libuct_ib_mlx5.so.*
+%endif
+
+%if %{with mad}
+%package mad
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Summary: UCX Infiniband MAD support
+Group: System Environment/Libraries
+
+%description mad
+Provide Infiniband MAD support for UCX. Enables running perftest using
+Infiniband datagrams for out-of-band communications.
+
+%files mad
+%{_libdir}/ucx/libucx_perftest_mad.so.*
+%endif
+
 %changelog
+* Wed Jul 09 2025 Kamal Heib <kheib@redhat.com> - 1.18.1-1
+- Update to upstream release 1.18.1
+- Resolves: RHEL-94447
+
 * Wed Nov 06 2024 Kamal Heib <kheib@redhat.com> - 1.17.0-2
 - Fix build for ppc64le
 - Resolves: RHEL-52883
