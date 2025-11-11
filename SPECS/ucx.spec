@@ -9,10 +9,12 @@
 %bcond_with    ugni
 %bcond_with    xpmem
 %bcond_with    vfs
+%bcond_with    mad
+%bcond_without mlx5
 
 Name: ucx
-Version: 1.17.0
-Release: 2%{?dist}
+Version: 1.18.1
+Release: 1%{?dist}
 Summary: UCX is a communication library implementing high-performance messaging
 
 License: BSD-3-Clause AND MIT AND CC-PDDC AND (BSD-3-Clause OR Apache-2.0)
@@ -28,16 +30,12 @@ License: BSD-3-Clause AND MIT AND CC-PDDC AND (BSD-3-Clause OR Apache-2.0)
 
 URL: http://www.openucx.org
 Source: https://github.com/openucx/%{name}/releases/download/v%{version}/ucx-%{version}.tar.gz
-# BUILD/CONFIG: Keep CFLAGS and CXXFLAGS separate
-# Fixes build for https://fedoraproject.org/wiki/Changes/PortingToModernC
-Patch0: 9558.patch
-Patch1: UCS-TIME-Fix-undeclared-INFINITY-error-in-ucs_time_u.patch
 
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 Prefix: %{_prefix}
 
 # UCX currently supports only the following architectures
-ExclusiveArch: aarch64 ppc64le x86_64
+ExclusiveArch: aarch64 ppc64le x86_64 riscv64
 
 %if %{defined extra_deps}
 Requires: %{?extra_deps}
@@ -58,6 +56,9 @@ BuildRequires: gdrcopy
 %if %{with ib}
 BuildRequires: libibverbs-devel
 %endif
+%if %{with mlx5}
+BuildRequires: rdma-core-devel
+%endif
 %if %{with knem}
 BuildRequires: knem
 %endif
@@ -72,6 +73,9 @@ BuildRequires: xpmem-devel
 %endif
 %if %{with vfs}
 BuildRequires: fuse3-devel
+%endif
+%if %{with mad}
+BuildRequires: libibmad-devel libibumad-devel
 %endif
 
 %description
@@ -98,8 +102,6 @@ Provides header files and examples for developing with UCX.
 
 %prep
 %setup -q
-%patch -P0 -p1
-%patch -P1 -p1
 autoreconf -fiv
 
 %build
@@ -116,12 +118,14 @@ autoreconf -fiv
            %_with_arg cuda cuda \
            %_with_arg gdrcopy gdrcopy \
            %_with_arg ib verbs \
+           %_with_arg mlx5 mlx5 \
            %_with_arg knem knem \
            %_with_arg rdmacm rdmacm \
            %_with_arg rocm rocm \
            %_with_arg xpmem xpmem \
            %_with_arg vfs fuse3 \
            %_with_arg ugni ugni \
+           %_with_arg mad mad \
            %{?configure_options}
 make %{?_smp_mflags} V=1
 
@@ -320,7 +324,43 @@ status, and more.
 %{_bindir}/ucx_vfs
 %endif
 
+%if %{with mlx5}
+%package ib-mlx5
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: ucx-ib = %{version}-%{release}
+Summary: UCX IB MLX5 RDMA provider support
+Group: System Environment/Libraries
+
+%description ib-mlx5
+Provides support for DevX, Direct Verbs and DC transports for Infiniband
+devices.
+
+%files ib-mlx5
+%{_libdir}/ucx/libuct_ib_mlx5.so.*
+%endif
+
+%if %{with mad}
+%package mad
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Summary: UCX Infiniband MAD support
+Group: System Environment/Libraries
+
+%description mad
+Provide Infiniband MAD support for UCX. Enables running perftest using
+Infiniband datagrams for out-of-band communications.
+
+%files mad
+%{_libdir}/ucx/libucx_perftest_mad.so.*
+%endif
+
 %changelog
+* Thu Jun 19 2025 Kamal Heib <kheib@redhat.com> - 1.18.1-1
+- Update to upstream release 1.18.1
+- Resolves: RHEL-94486
+
+* Fri Mar 14 2025 David Abdurachmanov <davidlt@rivosinc.com> - 1.17.0-3
+- Enable riscv64
+
 * Fri Nov 22 2024 Kamal Heib <kheib@redhat.com> - 1.17.0-2
 - Fix Unhandled patch file issue
   Resolves: RHEL-24811
