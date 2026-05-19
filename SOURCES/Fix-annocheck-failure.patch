@@ -1,0 +1,26 @@
+From deb5a0c31ebfcf8d4cb838705b00a60dcc6d5b27 Mon Sep 17 00:00:00 2001
+From: Kamal Heib <kheib@redhat.com>
+Date: Thu, 5 Feb 2026 08:54:51 -0500
+Subject: [PATCH] Fix annocheck failure
+
+Signed-off-by: Kamal Heib <kheib@redhat.com>
+---
+ src/ucs/sys/compiler.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/ucs/sys/compiler.h b/src/ucs/sys/compiler.h
+index 9ebb8e89fa3f..7244ef9ade87 100644
+--- a/src/ucs/sys/compiler.h
++++ b/src/ucs/sys/compiler.h
+@@ -32,7 +32,7 @@
+ 
+ /* A function which should not be optimized */
+ #if defined(HAVE_ATTRIBUTE_NOOPTIMIZE) && (HAVE_ATTRIBUTE_NOOPTIMIZE == 1)
+-#define UCS_F_NOOPTIMIZE __attribute__((optimize("O0")))
++#define UCS_F_NOOPTIMIZE __attribute__((optimize("O2")))
+ #else
+ #define UCS_F_NOOPTIMIZE
+ #endif
+-- 
+2.52.0
+

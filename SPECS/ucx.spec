@@ -11,9 +11,10 @@
 %bcond_with    vfs
 %bcond_with    mad
 %bcond_without mlx5
+%bcond_with    efa
 
 Name: ucx
-Version: 1.18.1
+Version: 1.19.1
 Release: 1%{?dist}
 Summary: UCX is a communication library implementing high-performance messaging
 
@@ -30,6 +31,7 @@ License: BSD-3-Clause AND MIT AND CC-PDDC AND (BSD-3-Clause OR Apache-2.0)
 
 URL: http://www.openucx.org
 Source: https://github.com/openucx/%{name}/releases/download/v%{version}/ucx-%{version}.tar.gz
+Patch0: Fix-annocheck-failure.patch
 
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 Prefix: %{_prefix}
@@ -57,6 +59,9 @@ BuildRequires: gdrcopy
 BuildRequires: libibverbs-devel
 %endif
 %if %{with mlx5}
+BuildRequires: rdma-core-devel
+%endif
+%if %{with efa}
 BuildRequires: rdma-core-devel
 %endif
 %if %{with knem}
@@ -102,6 +107,7 @@ Provides header files and examples for developing with UCX.
 
 %prep
 %setup -q
+%patch -P0 -p1
 autoreconf -fiv
 
 %build
@@ -119,6 +125,7 @@ autoreconf -fiv
            %_with_arg gdrcopy gdrcopy \
            %_with_arg ib verbs \
            %_with_arg mlx5 mlx5 \
+           %_with_arg efa efa \
            %_with_arg knem knem \
            %_with_arg rdmacm rdmacm \
            %_with_arg rocm rocm \
@@ -339,6 +346,19 @@ devices.
 %{_libdir}/ucx/libuct_ib_mlx5.so.*
 %endif
 
+%if %{with efa}
+%package ib-efa
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Summary: UCX EFA device RDMA support
+Group: System Environment/Libraries
+
+%description ib-efa
+Provides support for EFA device as an IBTA transport for UCX.
+
+%files ib-efa
+%{_libdir}/ucx/libuct_ib_efa.so.*
+%endif
+
 %if %{with mad}
 %package mad
 Requires: %{name}%{?_isa} = %{version}-%{release}
@@ -354,6 +374,10 @@ Infiniband datagrams for out-of-band communications.
 %endif
 
 %changelog
+* Wed Feb 04 2026 Kamal Heib <kheib@redhat.com> - 1.19.1-1
+- Update to upstream release 1.19.1
+- Resolves: RHEL-98259
+
 * Thu Jun 19 2025 Kamal Heib <kheib@redhat.com> - 1.18.1-1
 - Update to upstream release 1.18.1
 - Resolves: RHEL-94486
