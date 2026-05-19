@@ -11,10 +11,11 @@
 %bcond_with    vfs
 %bcond_with    mad
 %bcond_without mlx5
+%bcond_with    efa
 
 Name: ucx
-Version: 1.18.1
-Release: 1%{?dist}
+Version: 1.19.1
+Release: 2%{?dist}
 Summary: UCX is a communication library implementing high-performance messaging
 
 License: BSD
@@ -47,6 +48,9 @@ BuildRequires: gdrcopy
 BuildRequires: libibverbs-devel
 %endif
 %if %{with mlx5}
+BuildRequires: rdma-core-devel
+%endif
+%if %{with efa}
 BuildRequires: rdma-core-devel
 %endif
 %if %{with knem}
@@ -107,6 +111,7 @@ autoreconf -fiv
            %_with_arg gdrcopy gdrcopy \
            %_with_arg ib verbs \
            %_with_arg mlx5 mlx5 \
+           %_with_arg efa efa \
            %_with_arg knem knem \
            %_with_arg rdmacm rdmacm \
            %_with_arg rocm rocm \
@@ -326,6 +331,19 @@ devices.
 %{_libdir}/ucx/libuct_ib_mlx5.so.*
 %endif
 
+%if %{with efa}
+%package ib-efa
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Summary: UCX EFA device RDMA support
+Group: System Environment/Libraries
+
+%description ib-efa
+Provides support for EFA device as an IBTA transport for UCX.
+
+%files ib-efa
+%{_libdir}/ucx/libuct_ib_efa.so.*
+%endif
+
 %if %{with mad}
 %package mad
 Requires: %{name}%{?_isa} = %{version}-%{release}
@@ -341,6 +359,22 @@ Infiniband datagrams for out-of-band communications.
 %endif
 
 %changelog
+* Fri Jan 23 2026 Kamal Heib <kheib@redhat.com> - 1.19.1-2
+- Rebuilt for RHEL-9.8
+- Resolves: RHEL-98268
+
+* Mon Jan 05 2026 Kamal Heib <kheib@redhat.com> - 1.19.1-1
+- Update to upstream release 1.19.1
+- Resolves: RHEL-98268
+
+* Wed Dec 17 2025 Kamal Heib <kheib@redhat.com> - 1.19.0-2
+- bump release to rebuild in sidetag
+- Resolves: RHEL-98268
+
+* Wed Dec 10 2025 Kamal Heib <kheib@redhat.com> - 1.19.0-1
+- Update to upstream release 1.19.0
+- Resolves: RHEL-98268
+
 * Wed Jul 09 2025 Kamal Heib <kheib@redhat.com> - 1.18.1-1
 - Update to upstream release 1.18.1
 - Resolves: RHEL-94447
