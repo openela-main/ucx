@@ -14,8 +14,9 @@
 %bcond_with    efa
 
 Name: ucx
+Epoch: 1
 Version: 1.19.1
-Release: 1%{?dist}
+Release: 3%{?dist}
 Summary: UCX is a communication library implementing high-performance messaging
 
 License: BSD-3-Clause AND MIT AND CC-PDDC AND (BSD-3-Clause OR Apache-2.0)
@@ -99,7 +100,7 @@ The acronym UCX stands for "Unified Communication X".
 %endif
 
 %package devel
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: Header files required for developing with UCX
 
 %description devel
@@ -169,7 +170,7 @@ rm -f %{buildroot}%{_libdir}/ucx/lib*.a
 
 %if %{with cma}
 %package cma
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX CMA support
 
 %description cma
@@ -184,7 +185,7 @@ process.
 
 %if %{with cuda}
 %package cuda
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX CUDA support
 
 %description cuda
@@ -201,7 +202,7 @@ technology for direct data transfer between GPU and RDMA devices.
 
 %if %{with gdrcopy}
 %package gdrcopy
-Requires: %{name}-cuda%{?_isa} = %{version}-%{release}
+Requires: %{name}-cuda%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX GDRCopy support
 
 %description gdrcopy
@@ -215,7 +216,7 @@ library, built on top of the NVIDIA GPUDirect RDMA technology.
 
 %if %{with ib}
 %package ib
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX RDMA support
 
 %description ib
@@ -231,7 +232,7 @@ hardware-offloaded data transfer.
 
 %if %{with knem}
 %package knem
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX KNEM transport support
 
 %description knem
@@ -246,8 +247,8 @@ for large messages.
 
 %if %{with rdmacm}
 %package rdmacm
-Requires: %{name}-ib%{?_isa} = %{version}-%{release}
-Requires: ucx-ib = %{version}-%{release}
+Requires: %{name}-ib%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: ucx-ib = %{epoch}:%{version}-%{release}
 Summary: UCX RDMA connection manager support
 
 %description rdmacm
@@ -261,7 +262,7 @@ based connection establishment for RDMA-capable transports.
 
 %if %{with rocm}
 %package rocm
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX ROCm GPU support
 
 %description rocm
@@ -274,7 +275,7 @@ Provides Radeon Open Compute (ROCm) Runtime support for UCX.
 
 %if %{with gdrcopy}
 %package rocmgdr
-Requires: %{name}-rocm%{?_isa} = %{version}-%{release}
+Requires: %{name}-rocm%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX GDRCopy support for ROCM
 
 %description rocmgdr
@@ -290,7 +291,7 @@ technology.
 
 %if %{with ugni}
 %package ugni
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX Gemini/Aries transport support.
 
 %description ugni
@@ -303,7 +304,7 @@ Provides Gemini/Aries transport for UCX.
 
 %if %{with xpmem}
 %package xpmem
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX XPMEM transport support.
 
 %description xpmem
@@ -317,7 +318,7 @@ process to map the memory of another process into its virtual address space.
 
 %if %{with vfs}
 %package vfs
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX Virtual Filesystem support.
 
 %description vfs
@@ -333,8 +334,8 @@ status, and more.
 
 %if %{with mlx5}
 %package ib-mlx5
-Requires: %{name}%{?_isa} = %{version}-%{release}
-Requires: ucx-ib = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: ucx-ib = %{epoch}:%{version}-%{release}
 Summary: UCX IB MLX5 RDMA provider support
 Group: System Environment/Libraries
 
@@ -348,7 +349,7 @@ devices.
 
 %if %{with efa}
 %package ib-efa
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX EFA device RDMA support
 Group: System Environment/Libraries
 
@@ -361,7 +362,7 @@ Provides support for EFA device as an IBTA transport for UCX.
 
 %if %{with mad}
 %package mad
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
 Summary: UCX Infiniband MAD support
 Group: System Environment/Libraries
 
@@ -374,6 +375,14 @@ Infiniband datagrams for out-of-band communications.
 %endif
 
 %changelog
+* Wed Oct 07 2026 Kamal Heib <kheib@redhat.com> - 1:1.19.1-3
+- Bump release for rebuild
+- Resolves: RHEL-275731
+
+* Sat Oct 03 2026 Kamal Heib <kheib@redhat.com> - 1:1.19.1-2
+- Add Epoch: 1 to the ucx spec file
+- Resolves: RHEL-275731
+
 * Wed Feb 04 2026 Kamal Heib <kheib@redhat.com> - 1.19.1-1
 - Update to upstream release 1.19.1
 - Resolves: RHEL-98259
